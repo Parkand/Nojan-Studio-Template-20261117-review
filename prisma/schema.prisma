@@ -1,0 +1,180 @@
+// Fresh-install template only; never apply this baseline to an existing application database.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TaskStatus {
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TaskEventType {
+  CREATED
+  UPDATED
+  REASSIGNED
+  STARTED
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+  CANCELLED
+  COMMENTED
+  DELETED
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_UPDATED
+  TASK_SUBMITTED
+  TASK_CHANGES_REQUESTED
+  TASK_APPROVED
+  TASK_CANCELLED
+  TASK_COMMENTED
+  TASK_DUE_SOON
+  TASK_OVERDUE
+  SYSTEM
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now()) @db.DateTime(3)
+  createdById Int?
+  updatedAt   DateTime  @updatedAt @db.DateTime(3)
+  updatedById Int?
+  deletedAt   DateTime? @db.DateTime(3)
+  deletedById Int?
+
+  createdBy User? @relation("User_created", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  updatedBy User? @relation("User_updated", fields: [updatedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deletedBy User? @relation("User_deleted", fields: [deletedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  auditUserCreated User[] @relation("User_created")
+  auditUserUpdated User[] @relation("User_updated")
+  auditUserDeleted User[] @relation("User_deleted")
+
+  name                String    @db.VarChar(100)
+  username            String    @unique @db.VarChar(64)
+  passwordHash        String    @db.VarChar(255)
+  role                Role      @default(USER)
+  sessionVersion      Int       @default(0)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime? @db.DateTime(3)
+
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignee")
+  reviewTasks   Task[] @relation("TaskReviewer")
+  updatedTasks  Task[] @relation("TaskUpdater")
+  deletedTasks  Task[] @relation("TaskDeleter")
+
+  taskEvents    TaskEvent[]     @relation("TaskEventActor")
+  notifications Notification[] @relation("NotificationRecipient")
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now()) @db.DateTime(3)
+  createdById Int
+  updatedAt   DateTime  @updatedAt @db.DateTime(3)
+  updatedById Int?
+  deletedAt   DateTime? @db.DateTime(3)
+  deletedById Int?
+
+  title       String       @db.VarChar(200)
+  description String       @db.Text
+  status      TaskStatus   @default(ASSIGNED)
+  priority    TaskPriority @default(NORMAL)
+  version     Int          @default(0)
+
+  assigneeId Int
+  reviewerId Int
+
+  dueAt       DateTime? @db.DateTime(3)
+  startedAt   DateTime? @db.DateTime(3)
+  submittedAt DateTime? @db.DateTime(3)
+  approvedAt  DateTime? @db.DateTime(3)
+  cancelledAt DateTime? @db.DateTime(3)
+
+  createdBy User  @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  updatedBy User? @relation("TaskUpdater", fields: [updatedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deletedBy User? @relation("TaskDeleter", fields: [deletedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  assignee  User  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reviewer  User  @relation("TaskReviewer", fields: [reviewerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  events        TaskEvent[]
+  notifications Notification[]
+
+  @@index([createdById, deletedAt, createdAt])
+  @@index([assigneeId, deletedAt, status, dueAt])
+  @@index([reviewerId, deletedAt, status, createdAt])
+  @@index([deletedAt, status, dueAt])
+  @@index([updatedById])
+  @@index([deletedById])
+  @@map("tasks")
+}
+
+model TaskEvent {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  taskId  Int
+  actorId Int
+  type    TaskEventType
+
+  fromStatus TaskStatus?
+  toStatus   TaskStatus?
+  message    String?     @db.Text
+  details    Json?
+
+  task  Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor User @relation("TaskEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([taskId, createdAt, id])
+  @@index([actorId, createdAt])
+  @@map("task_events")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  recipientId Int
+  type        NotificationType
+  title       String           @db.VarChar(200)
+  body        String           @db.Text
+
+  taskId    Int?
+  readAt    DateTime? @db.DateTime(3)
+  dedupeKey String?   @unique @db.VarChar(191)
+
+  recipient User  @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  task      Task? @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([recipientId, readAt, createdAt])
+  @@index([recipientId, createdAt, id])
+  @@index([taskId])
+  @@map("notifications")
+}

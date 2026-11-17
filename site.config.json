@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "projectId": "nexora-workspace",
+  "name": "Nexora",
+  "description": "",
+  "defaultTheme": "light",
+  "color": "violet",
+  "tasks": true,
+  "logo": "",
+  "icon": ""
+}

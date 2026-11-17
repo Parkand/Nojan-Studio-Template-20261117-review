@@ -1,0 +1,250 @@
+{
+  "status": "IMPLEMENTED_FOR_REVIEW_NOT_RUNTIME_VALIDATED",
+  "source_commit": "4edd8da504a721d923bc45f858d24ebc8c5fc33b",
+  "source_root": "/mnt/data/nojan-source",
+  "template_root": "/mnt/data/nojan-template",
+  "scope": "Fresh project and empty dedicated database only. No source-repository changes, Git operations that modify history, or live database operations are authorized by this plan.",
+  "delete_groups": [
+    {
+      "id": "module_pages",
+      "reason": "صفحات اختصاصی دسته‌بندی، کالا، سفارش و درخواست‌های پرسنلی",
+      "paths": [
+        "src/app/(workspace)/categories/page.tsx",
+        "src/app/(workspace)/categories/new/page.tsx",
+        "src/app/(workspace)/categories/[id]/edit/page.tsx",
+        "src/app/(workspace)/products/page.tsx",
+        "src/app/(workspace)/products/new/page.tsx",
+        "src/app/(workspace)/products/[id]/edit/page.tsx",
+        "src/app/(workspace)/orders/page.tsx",
+        "src/app/(workspace)/orders/new/page.tsx",
+        "src/app/(workspace)/orders/[id]/page.tsx",
+        "src/app/(workspace)/orders/[id]/edit/page.tsx",
+        "src/app/(workspace)/requests/page.tsx",
+        "src/app/(workspace)/requests/new/page.tsx",
+        "src/app/(workspace)/requests/[id]/page.tsx"
+      ]
+    },
+    {
+      "id": "module_components_and_libraries",
+      "reason": "کامپوننت‌ها و منطق اختصاصی ماژول‌های حذف‌شونده؛ فایل‌های مشترک در این فهرست نیستند",
+      "paths": [
+        "src/components/category-editor.tsx",
+        "src/components/product-editor.tsx",
+        "src/components/order-share.tsx",
+        "src/components/personnel-request-form.tsx",
+        "src/components/personnel-request-notifications-read.tsx",
+        "src/lib/product-code.ts",
+        "src/lib/personnel-request-actions.ts",
+        "src/lib/personnel-request-permissions.ts"
+      ]
+    },
+    {
+      "id": "historical_migrations_to_replace",
+      "reason": "جایگزینی تاریخچهٔ دیتابیس پروژهٔ اصلی با baseline مستقل فقط در قالب تازه؛ نه اجرای DROP روی دیتابیس موجود",
+      "paths": [
+        "prisma/migrations/20261112000000_init/migration.sql",
+        "prisma/migrations/20261113000000_product_price/migration.sql",
+        "prisma/migrations/20261113160000_add_super_admin_role/migration.sql",
+        "prisma/migrations/20261114000000_order_item_unit_price/migration.sql",
+        "prisma/migrations/20261114095727_personnel_requests/migration.sql",
+        "prisma/migrations/20261115000000_tasks_notifications/migration.sql"
+      ]
+    },
+    {
+      "id": "duplicate_schemas_and_sql_previews",
+      "reason": "حذف مسیرهای موازی و نسخه‌های SQL مخصوص پروژهٔ قبلی؛ تنها prisma/schema.prisma و baseline قالب مرجع خواهند بود",
+      "paths": [
+        "database/fresh/migrations/00000000000000_fresh_install/migration.sql",
+        "database/fresh/migrations/migration_lock.toml",
+        "migration-review/fresh-install-test/migrations/00000000000000_fresh_install/migration.sql",
+        "migration-review/fresh-install-test/migrations/migration_lock.toml",
+        "migration-review/fresh-install-test/schema.prisma",
+        "migration-review/fresh-install.preview.sql",
+        "migration-review/personnel_requests.sql",
+        "prisma/tasks_notifications.preview.sql"
+      ]
+    },
+    {
+      "id": "project_specific_scripts_and_artifact",
+      "reason": "دو ابزار نقش‌دهی به حساب‌های ثابت پروژهٔ قبلی، تولیدکنندهٔ schema موازی، و فایل خروجی ترمینال غیرمرتبط",
+      "paths": [
+        "scripts/set-user-roles.mjs",
+        "scripts/transfer-roles.mjs",
+        "scripts/prepare-fresh-schema.mjs",
+        "16.4.6 (Turbopack)"
+      ]
+    }
+  ],
+  "modify": [
+    {
+      "path": "src/lib/actions.ts",
+      "change": "حذف category.save/delete، product.save/delete، order.save/delete/approve و وابستگی‌های اختصاصی؛ حفظ loginAction/logoutAction و user.save/delete با کنترل مدیر ارشد و نشست؛ تغییر مقصد ورود به /tasks و مقصد اکشن کاربران به /users؛ رد عملیات حذف‌شده"
+    },
+    {
+      "path": "src/lib/auth.ts",
+      "change": "حفظ احراز هویت، کوکی، JWT، نقش‌ها و requireAdmin/requireSuperAdmin؛ تغییر redirectهای /orders به /tasks"
+    },
+    {
+      "path": "src/components/forms.tsx",
+      "change": "حذف OrderForm و ProductOption/Row/OrderRow و importهای بلااستفاده؛ حفظ Submit، ActionForm، PasswordInput و LoginForm"
+    },
+    {
+      "path": "src/components/navigation.tsx",
+      "change": "حذف منوهای orders/products/categories/requests و آیکن‌های محلی یا importهای اختصاصی؛ حفظ tasks/notifications/users و محدودیت نمایش کاربران"
+    },
+    {
+      "path": "src/components/ui.tsx",
+      "change": "عمومی‌کردن متن مدیریت سفارش کالا و حذف Status اختصاصی تأیید سفارش و import بلااستفادهٔ آن؛ حفظ سایر اجزای مشترک"
+    },
+    {
+      "path": "src/components/user-editor.tsx",
+      "change": "جایگزینی توضیح حفظ سفارش‌های قبلی با توضیح حفظ سوابق مرتبط؛ بدون تغییر مجوزها و منطق مدیریت کاربر"
+    },
+    {
+      "path": "src/components/install-app.tsx",
+      "change": "جایگزینی متن مدیریت سفارش‌ها با کار با سامانه و تصریح نیاز به اتصال به سرور؛ حفظ راهنمای نصب PWA و رفتار مشترک آن، بدون ادعای پشتیبانی آفلاین"
+    },
+    {
+      "path": "src/components/persian-date-input.tsx",
+      "change": "حفظ تقویم شمسی موردنیاز TaskCreateForm؛ عمومی‌کردن پیش‌فرض name از orderDate به date و label از تاریخ سفارش به تاریخ؛ حفظ props صریح فرم وظیفه"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "change": "تغییر هدایت صفحهٔ اصلی از /orders به /tasks"
+    },
+    {
+      "path": "src/app/login/page.tsx",
+      "change": "هدایت کاربر واردشده به /tasks و حذف متن معرفی کالا و سفارش؛ حفظ فرم ورود"
+    },
+    {
+      "path": "src/app/(workspace)/layout.tsx",
+      "change": "تغییر لینک برند و aria-label به وظایف و عمومی‌کردن متن footer؛ حفظ محافظ ورود، شمارندهٔ اعلان‌ها، خروج و چیدمان"
+    },
+    {
+      "path": "src/app/(workspace)/notifications/page.tsx",
+      "change": "حذف select و نوع personnelRequestId و لینک /requests؛ حفظ اعلان‌های وظیفه و عمومی، فیلترها، صفحه‌بندی و کنترل خوانده‌شدن"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "change": "عمومی‌کردن عنوان و توضیح سفارش کالا در metadata؛ حفظ RTL، فونت، viewport و آیکن‌ها"
+    },
+    {
+      "path": "src/app/manifest.ts",
+      "change": "تغییر start_url به /tasks و عمومی‌کردن عنوان و توضیح؛ حفظ manifest و آیکن‌های نصب"
+    },
+    {
+      "path": "src/app/error.tsx",
+      "change": "تغییر لینک بازگشت سفارش‌ها به وظایف؛ حفظ صفحهٔ خطا"
+    },
+    {
+      "path": "src/app/not-found.tsx",
+      "change": "تغییر لینک بازگشت سفارش‌ها به وظایف؛ حفظ صفحهٔ 404"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "change": "حذف هفت مدل اختصاصی، روابط آن‌ها در User، personnelRequestId/personnelRequest/index در Notification و دو مقدار PERSONNEL_REQUEST_*؛ حفظ User/Task/TaskEvent/Notification و Role و enumهای وظیفه"
+    },
+    {
+      "path": "scripts/check-fresh-target.mjs",
+      "change": "جایگزینی نام‌های ثابت دیتابیس پروژهٔ قبلی با کنترل هدف مناسب قالب و تأیید صریح مقصد؛ کنترل فقط‌خواندنی وضعیت واقعی دیتابیس پیش از نصب اولیه و توقف برای هدف غیرخالی یا ناشناخته؛ ادامهٔ نصب ناقص فقط پس از تطبیق baseline خود قالب؛ هیچ migration/reset/drop در این ابزار اجرا نشود"
+    },
+    {
+      "path": "scripts/configure.mjs",
+      "change": "پیش‌فرض عمومی و جدا برای دیتابیس قالب و تنظیمات لازم کنترل هدف؛ حفظ ساخت secret تصادفی و امتناع از بازنویسی .env موجود"
+    },
+    {
+      "path": "scripts/smoke.mjs",
+      "change": "جایگزینی مسیرهای قدیمی با مسیرهای وظایف، اعلان‌ها و کاربران؛ بررسی redirect اصلی/manifest و نبود مسیرهای حذف‌شده؛ حفظ تست ورود RTL و سرآیندها؛ اعلام صریح عدم پوشش CRUD واقعی"
+    },
+    {
+      "path": "setup.ps1",
+      "change": "هماهنگی نصب تازه با baseline و کنترل هدف قالب؛ حفظ توقف روی خطا، عدم بازنویسی .env و عدم ساخت مدیر تکراری؛ هیچ reset/drop یا retry خودکار نوشتن اضافه نشود"
+    },
+    {
+      "path": "setup.sh",
+      "change": "همان هماهنگی نصب تازه و کنترل هدف نسخهٔ PowerShell؛ حفظ توقف روی خطا و محافظت از فایل تنظیمات"
+    },
+    {
+      "path": ".env.example",
+      "change": "پیش‌فرض هدف تازه و placeholderهای عمومی؛ بدون رمز یا کلید واقعی"
+    },
+    {
+      "path": ".gitignore",
+      "change": "حذف اشاره به schema تولیدی مسیر موازی database/fresh؛ حفظ منع ثبت .env، وابستگی‌ها و خروجی build"
+    },
+    {
+      "path": "package.json",
+      "change": "نام عمومی قالب و هماهنگی scripts نصب/کنترل هدف؛ فعلاً همهٔ dependencyها و نسخه‌ها حفظ شوند"
+    },
+    {
+      "path": "package-lock.json",
+      "change": "هماهنگی صرفاً metadata نام پروژه با package.json؛ بدون تغییر خودسرانهٔ نسخه‌های قفل‌شده"
+    },
+    {
+      "path": "next.config.ts",
+      "change": "حذف allowedDevOrigins ثابت مربوط به شبکهٔ قبلی؛ حفظ سرآیندهای امنیتی و سایر تنظیمات مشترک"
+    },
+    {
+      "path": "README.fa.md",
+      "change": "راهنمای نصب قالب فقط در پوشه و دیتابیس تازه؛ اصلاح امکانات، نقش‌ها و چهار جدول؛ حذف دستورهای نصب‌کننده‌های غایب و ادعاهای آزمون نسخهٔ قدیمی از گزارش قالب"
+    },
+    {
+      "path": "TESTING.fa.md",
+      "change": "چک‌لیست وظایف، اعلان‌ها، کاربران، نقش‌ها، نشست و نصب تازه؛ تفکیک برنامهٔ آزمون از نتیجهٔ اجرا"
+    }
+  ],
+  "add_after_approval": [
+    {
+      "path": "prisma/migrations/00000000000000_template_init/migration.sql",
+      "purpose": "baseline تازه از schema نهایی؛ چهار جدول users/tasks/task_events/notifications با نقش‌ها، روابط و indexهای محفوظ؛ فقط نصب خالی"
+    },
+    {
+      "path": "TEMPLATE-REPORT.fa.md",
+      "purpose": "ثبت مبنای commit، تغییرات نهایی، نتیجهٔ واقعی نصب، بررسی کد، آزمون مستقل، build، smoke و محدودیت‌های MySQL/مرورگر به‌صورت جدا"
+    }
+  ],
+  "remove_models": [
+    "Category",
+    "Product",
+    "Order",
+    "OrderItem",
+    "PersonnelRequest",
+    "PersonnelRequestRecipient",
+    "PersonnelRequestReply"
+  ],
+  "keep_models": [
+    "User",
+    "Task",
+    "TaskEvent",
+    "Notification"
+  ],
+  "keep_enums": [
+    "Role",
+    "TaskStatus",
+    "TaskPriority",
+    "TaskEventType"
+  ],
+  "remove_notification_types": [
+    "PERSONNEL_REQUEST_CREATED",
+    "PERSONNEL_REQUEST_REPLIED"
+  ],
+  "keep_all_other_tracked_files": true,
+  "archive_exclusions_only_not_deletion_authorization": [
+    ".git/",
+    "node_modules/",
+    ".next/",
+    ".env",
+    ".env.* except .env.example",
+    "*.tsbuildinfo",
+    "local logs",
+    "database dumps/backups",
+    "real credentials or session secrets"
+  ],
+  "no_automatic_install_retry": true,
+  "no_live_database_operations": true,
+  "verification": {
+    "approved_deletions_absent": 39,
+    "database_operations_performed": false,
+    "note": "Offline checks only. Original proposal retained for traceability; AUDIT.fa.md describes actual validation. Additional offline tests and separate command runner added."
+  }
+}

@@ -1,0 +1,16 @@
+/* Semantic overrides keep the original layout and support both themes. */
+:root { color-scheme: light; --surface:#fff; --input:#fafbfc; }
+html[data-theme=dark] { color-scheme:dark; --bg:#11141d; --surface:#1b202d; --input:#222938; --ink:#e8edf8; --muted:#adb7ca; --line:#354056; --white:#1b202d; --pink:color-mix(in srgb,var(--red) 22%,#1b202d)!important; --green:#73d3ac; }
+html[data-theme=dark] :is(.topbar,.sidebar,.stat,.search-bar,.card,.empty,.form-panel,.login-page,.login-form,.skip-link,.secondary) { background:var(--surface); }
+html[data-theme=dark] :is(input,select,textarea,.order-line) { background:var(--input); }
+html[data-theme=dark] .error { color:#ffabb6; border-color:#713446; }
+html[data-theme=dark] .success-alert,html[data-theme=dark] .badge.success { background:#153f33; color:#8be3bc; }
+html[data-theme=dark] dialog { background:var(--surface); color:var(--ink); border-color:var(--line); }
+html[data-theme=dark] .skeleton { background:#2c3546; }
+.theme-toggle { white-space:nowrap; padding:6px 12px; min-height:40px; color:var(--ink); }
+.brand-mark img { width:100%;height:100%;object-fit:contain;border-radius:inherit; }
+.brand strong { overflow-wrap:anywhere; }
+.login-theme { position:absolute;top:16px;left:16px;z-index:5; }
+html[data-theme=dark] .danger:hover { background:var(--input); }
+input:focus,select:focus,textarea:focus { box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 15%,transparent); }
+@media(max-width:760px) { .brand strong { font-size:18px; } .theme-toggle { font-size:11px; padding:5px 8px; } }
